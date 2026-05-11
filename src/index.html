@@ -10,10 +10,10 @@
         Willkommen!
     </h1>
     <p>
-        Es sind <span id="anzahl">0</span> Daten gespeichert! <button onclick="getCount()">Neu suchen</button>
+        Es sind <span id="anzahl">0</span> Daten gespeichert! <button onclick="getCount()">&#8635;</button>
     </p>
     <p>
-        Daten: <button onclick="getData()">Daten anzeigen</button>
+        Daten: <button onclick="getData()">&#8635;</button>
     </p>
     <table>
         <thead><tr>
@@ -28,8 +28,10 @@
         <input id="in-daten">
         <button onclick="senden()">Senden</button>
     </p>
+    <button onclick="login()">Login</button>
 </body>
 <script>
+let key = 0
 getCount()
 getData()
 async function senden() {
@@ -38,7 +40,7 @@ async function senden() {
 
     const name = document.getElementById("in-name").value
     const data = document.getElementById("in-daten").value
-    const body = JSON.stringify({ name, data })
+    const body = JSON.stringify({ key, name, data })
 
     console.log(await fetch("http://localhost:3000/api/v1/post", {
         method: "POST",
@@ -47,16 +49,36 @@ async function senden() {
     }))
     getData()
 }
+async function login() {
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
+    const body = JSON.stringify({ name: "Swen", password: "12345" })
+
+    const response = await fetch("http://localhost:3000/api/v1/login", {
+        method: "POST",
+        body,
+        headers
+    })
+    const responseBody = await response.json()
+    if (response.status === 200) {
+        key = responseBody.key
+    } else {
+        key = 0
+    }
+    // getData()
+}
 async function getCount() {
     const anzahl = document.getElementById("anzahl");
-    const daten = await fetch("http://localhost:3000/api/v1/anzahl");
+    const daten = await fetch(`http://localhost:3000/api/v1/anzahl/?key=${key}`);
     const text = await daten.text();
     anzahl.textContent = text;
 }
 async function getData() {
     const datenTBody = document.getElementById("daten");
     datenTBody.innerHTML = null;
-    const daten = await fetch("http://localhost:3000/api/v1/get");
+
+    const daten = await fetch(`http://localhost:3000/api/v1/get/?key=${key}`);
     const json = await daten.json();
     for (const d of json) {
         const tr = document.createElement("TR");
