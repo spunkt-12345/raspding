@@ -40,11 +40,11 @@ async function senden() {
     const data = document.getElementById("in-daten").value
     const body = JSON.stringify({ name, data })
 
-    await fetch("http://localhost:3000/api/post", {
+    console.log(await fetch("http://localhost:3000/api/v1/post", {
         method: "POST",
         body,
         headers
-    })
+    }))
     getData()
 }
 async function getCount() {

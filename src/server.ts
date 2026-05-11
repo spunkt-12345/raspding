@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 const db = new Database("mydb.sqlite", { create: true, strict: true });
 
-// make(db); insert(db); show(db);
+// make(db); insert(db);
 serve(db);
 
 function make(db: Database) {
@@ -23,14 +23,12 @@ function insert(db: Database) {
     const data = { name: "Max Mustermann", data: "123abc" };
     try {
         const insertData = db.prepare(sql);
-        insertData.run(data);
+        insertData.run({ name: "Max Mustermann", data: "123abc" });
+        insertData.run({ name: "Hans Wurst", data: "29fu3h" });
+        insertData.run({ name: "Susi Sorglos", data: "c34tcx43t" });
     } catch (fehler) {
         console.log(fehler);
     }
-}
-
-function show(db: Database) {
-    console.log(db.query("SELECT * FROM daten").get())
 }
 
 interface Daten {
@@ -50,47 +48,37 @@ function serve(db: Database) {
         if (path === "/") return new Response(Bun.file(".\\index.html"));
 
         // redirect
-        if (path === "/redir") return Response.redirect("/source", 301);
-
-        // send back a file (in this case, *this* file)
-        // if (path === "/source") return new Response(Bun.file(import.meta.path));
+        //if (path === "/redir") return Response.redirect("/source", 301);
 
         // respond with JSON
-        if (path === "/api/v1/get") {
-            // console.log("get")
-            const result = db.query("SELECT * FROM daten").all()
-            return Response.json(result);
-        }
-        if (path === "/api/v1/anzahl") {
-            // console.log("anzahl")
-            const result = db.query("SELECT COUNT(*) AS anzahl FROM daten").get() as Anzahl;
-            const anzahl = result["anzahl"];
-            return Response.json(anzahl);
-        }                                    
-        if (path === "/api") return Response.json({ some: "buns", for: "you" });
-
-        // receive JSON data to a POST request
-        if (req.method === "POST" && path === "/api/post") {
-        const json = await req.json() as Daten;
-        if (json.name !== "" && json.data !== "") {
-            const sql = "INSERT INTO daten (name, data) VALUES ($name, $data)";
-            const data = { name: json.name, data: json.data };
-            try {
-                const insertData = db.prepare(sql);
-                insertData.run(data);
-            } catch (fehler) {
-                console.log(fehler);
+        if (path.substring(0, 8) === "/api/v1/") {
+            const pfad = path.substring(8)
+            if (pfad === "get") {
+                // console.log("get")
+                const result = db.query("SELECT * FROM daten").all()
+                return Response.json(result);
             }
-            return Response.json({ success: true, data });
-        }
-        return Response.json("Error", { status: 400 });
-        }
-
-        // receive POST data from a form
-        if (req.method === "POST" && path === "/form") {
-        const data = await req.formData();
-        console.log(data.get("someField"));
-        return new Response("Success");
+            if (pfad === "anzahl") {
+                // console.log("anzahl")
+                const result = db.query("SELECT COUNT(*) AS anzahl FROM daten").get() as Anzahl;
+                const anzahl = result["anzahl"];
+                return Response.json(anzahl);
+            }                                    
+            if (pfad === "post" && req.method === "POST") {
+                const json = await req.json() as Daten;
+                if (json.name !== "" && json.data !== "") {
+                    const sql = "INSERT INTO daten (name, data) VALUES ($name, $data)";
+                    const data = { name: json.name, data: json.data };
+                    try {
+                        const insertData = db.prepare(sql);
+                        insertData.run(data);
+                        return Response.json("Ok", { status: 201 });
+                    } catch (fehler) {
+                        console.log(fehler);
+                    }
+                }
+                return Response.json("Error", { status: 400 });
+            }
         }
 
         // 404s
