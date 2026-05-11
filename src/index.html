@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>
+        Willkommen!
+    </h1>
+    <p>
+        Es sind <span id="anzahl">0</span> Daten gespeichert! <button onclick="getCount()">Neu suchen</button>
+    </p>
+    <p>
+        Daten: <button onclick="getData()">Daten anzeigen</button>
+    </p>
+    <table>
+        <thead><tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Daten</th>
+        </tr></thead>
+        <tbody id="daten"></tbody>
+    </table>
+    <p>
+        <input id="in-name">
+        <input id="in-daten">
+        <button onclick="senden()">Senden</button>
+    </p>
+</body>
+<script>
+getCount()
+getData()
+async function senden() {
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
+    const name = document.getElementById("in-name").value
+    const data = document.getElementById("in-daten").value
+    const body = JSON.stringify({ name, data })
+
+    await fetch("http://localhost:3000/api/post", {
+        method: "POST",
+        body,
+        headers
+    })
+    getData()
+}
+async function getCount() {
+    const anzahl = document.getElementById("anzahl");
+    const daten = await fetch("http://localhost:3000/api/v1/anzahl");
+    const text = await daten.text();
+    anzahl.textContent = text;
+}
+async function getData() {
+    const datenTBody = document.getElementById("daten");
+    datenTBody.innerHTML = null;
+    const daten = await fetch("http://localhost:3000/api/v1/get");
+    const json = await daten.json();
+    for (const d of json) {
+        const tr = document.createElement("TR");
+        const tdId = document.createElement("TD");
+        tdId.textContent = d.id;
+        const tdName = document.createElement("TD");
+        tdName.textContent = d.name;
+        const tdDaten = document.createElement("TD");
+        tdDaten.textContent = d.data;
+        tr.append(tdId);
+        tr.append(tdName);
+        tr.append(tdDaten);
+        datenTBody.append(tr);
+    }
+}
+</script>
+</html>
