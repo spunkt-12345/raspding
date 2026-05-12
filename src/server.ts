@@ -6,45 +6,8 @@ while (apiKey === 0) {
     apiKey = Math.random()
 }
 
-// make(db); insert(db);
-// show(db);
 serve(db);
 
-function make(db: Database) {
-    const sql = `
-    CREATE TABLE IF NOT EXISTS daten (
-        id  INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        data TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS user (
-        id  INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        password TEXT NOT NULL
-    )`;
-    try {
-        db.run(sql);
-    } catch (fehler) {
-        console.log(fehler);
-    }
-}
-function show(db: Database) {
-    console.log(db.query("SELECT * FROM daten").all())
-    console.log(db.query("SELECT * FROM user").all())
-}
-function insert(db: Database) {
-    try {
-        const insertData = db.prepare("INSERT INTO daten (name, data) VALUES ($name, $data)");
-        insertData.run({ name: "Max Mustermann", data: "123abc" });
-        insertData.run({ name: "Hans Wurst", data: "29fu3h" });
-        insertData.run({ name: "Susi Sorglos", data: "c34tcx43t" });
-
-        const insertUser = db.prepare("INSERT INTO user (name, password) VALUES ($name, $password)");
-        insertUser.run({ name: "Swen", password: "12345" });
-    } catch (fehler) {
-        console.log(fehler);
-    }
-}
 interface Daten {
     name: string
     data: string

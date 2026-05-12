@@ -32,8 +32,7 @@
 </body>
 <script>
 let key = 0
-getCount()
-getData()
+
 async function senden() {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
@@ -63,10 +62,12 @@ async function login() {
     const responseBody = await response.json()
     if (response.status === 200) {
         key = responseBody.key
+        getData()
+        getCount()
     } else {
         key = 0
     }
-    // getData()
+  
 }
 async function getCount() {
     const anzahl = document.getElementById("anzahl");
