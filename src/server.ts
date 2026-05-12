@@ -1,29 +1,17 @@
 import { Database } from "bun:sqlite";
-const db = new Database("mydb.sqlite", { create: true, strict: true });
+import type { User, Daten, Password, Anzahl } from "./ifaces";
 
+
+// Einfache Methode einen geheimen Schlüssel zu erzeugen.
 let apiKey = 0
 while (apiKey === 0) {
     apiKey = Math.random()
 }
 
-serve(db);
+serve();
 
-interface Daten {
-    name: string
-    data: string
-    key: string
-}
-interface User {
-    name: string
-    password: string
-}
-interface Anzahl {
-    anzahl: number
-}
-interface Password {
-    password: string
-}
-async function serve(db: Database) {
+async function serve() {
+    const db = new Database("mydb.sqlite", { create: true, strict: true });
     const server = Bun.serve({
         async fetch(req) {
             const path = new URL(req.url).pathname;
