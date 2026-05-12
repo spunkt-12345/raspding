@@ -52,7 +52,7 @@ async function login() {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
-    const body = JSON.stringify({ name: "Swen", password: "12345" })
+    const body = JSON.stringify({ name: "Felix", password: "12345" })
 
     const response = await fetch("http://localhost:3000/api/v1/login", {
         method: "POST",

@@ -20,7 +20,7 @@ function make(db: Database) {
     }
 }
 function show(db: Database) {
-    console.log(db.query("SELECT * FROM daten").all())
+    // console.log(db.query("SELECT * FROM daten").all())
     console.log(db.query("SELECT * FROM user").all())
 }
 async function insert(db: Database) {
@@ -31,7 +31,7 @@ async function insert(db: Database) {
         insertData.run({ name: "Dokken Station G1+", data: "c34tcx43t" });
 
         const insertUser = db.prepare("INSERT INTO user (name, password) VALUES ($name, $password)");
-        const admin = { name: "felix", password: "12345" }
+        const admin = { name: "Felix", password: "12345" }
         admin.password = await Bun.password.hash(admin.password)
         insertUser.run(admin);
     } catch (fehler) {
@@ -39,6 +39,6 @@ async function insert(db: Database) {
     }
 }
 
-make(db);
-insert(db);
-show(db);
+// make(db);
+// insert(db);
+// show(db);

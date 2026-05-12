@@ -23,7 +23,7 @@ interface Anzahl {
 interface Password {
     password: string
 }
-function serve(db: Database) {
+async function serve(db: Database) {
     const server = Bun.serve({
         async fetch(req) {
             const path = new URL(req.url).pathname;
@@ -39,15 +39,20 @@ function serve(db: Database) {
             if (path.substring(0, 8) === "/api/v1/") {
                 const pfad = path.substring(8).toLowerCase();
                 const method = req.method.toLowerCase();
+
+                // Login
                 if (pfad === "login" && method === "post") {
                     const json = await req.json() as User;
                     const name = json.name, password = json.password
                     const result = db.query("SELECT password FROM user WHERE name = $name").get({ name: name }) as Password;
-                    if (result.password === password) {
+                    const passwortRichtig = await Bun.password.verify(password, result.password)
+                    if (passwortRichtig) {
                         return Response.json({ key: apiKey })
                     }
                     return Response.json("Fehler", { status: 400 })
                 }
+
+                // Anzeige aller gespeicherter Daten
                 if (pfad.substring(0, 3) === "get") {
                     const key = parseFloat(new URL(req.url).searchParams.get("key") as string)
                     if (key === apiKey) {
@@ -56,6 +61,8 @@ function serve(db: Database) {
                     }
                     return Response.json("Fehler", { status: 403 })
                 }
+
+                // Zählen der Einträge
                 if (pfad.substring(0, 6) === "anzahl") {
                     const key = parseFloat(new URL(req.url).searchParams.get("key") as string)
                     if (key === apiKey) {
@@ -64,7 +71,9 @@ function serve(db: Database) {
                         return Response.json(anzahl);
                     }
                      return Response.json("Fehler", { status: 403 })
-                }                                    
+                }                     
+                
+                // Hinzufügen neuer Einträge
                 if (pfad === "post" && method === "post") {
                     const json = await req.json() as Daten;
                     if (json.name !== "" && json.data !== "" && parseFloat(json.key) === apiKey) {
