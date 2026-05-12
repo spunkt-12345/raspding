@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(20,20,20,0.8);
+            height: 100vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+        }
+    </style>
     <title>Document</title>
 </head>
 <body>
@@ -28,11 +40,20 @@
         <input id="in-daten">
         <button onclick="senden()">Senden</button>
     </p>
-    <button onclick="login()">Login</button>
+    <div id="login" class="login">
+        <input id="login-name" value="Felix">
+        <input id="login-password" type="password" value="12345">
+        <button onclick="login()">Login</button>
+    </div>
 </body>
 <script>
 let key = 0
-
+function showLogin() {
+    document.getElementById("login").style.display = "flex"
+}
+function hideLogin() {
+    document.getElementById("login").style.display = "none"
+}
 async function senden() {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
@@ -52,7 +73,10 @@ async function login() {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
-    const body = JSON.stringify({ name: "Felix", password: "12345" })
+    const name = document.getElementById("login-name").value
+    const password = document.getElementById("login-password").value
+
+    const body = JSON.stringify({ name, password })
 
     const response = await fetch("http://localhost:3000/api/v1/login", {
         method: "POST",
@@ -64,35 +88,47 @@ async function login() {
         key = responseBody.key
         getData()
         getCount()
+        hideLogin()
     } else {
         key = 0
+        showLogin()
     }
   
 }
 async function getCount() {
     const anzahl = document.getElementById("anzahl");
-    const daten = await fetch(`http://localhost:3000/api/v1/anzahl/?key=${key}`);
-    const text = await daten.text();
-    anzahl.textContent = text;
+    try {
+        const daten = await fetch(`http://localhost:3000/api/v1/anzahl/?key=${key}`);
+        const text = await daten.text();
+        anzahl.textContent = text;
+    } catch (error) {
+        console.log(error)
+        showLogin()
+    }
 }
 async function getData() {
     const datenTBody = document.getElementById("daten");
     datenTBody.innerHTML = null;
+    try {
 
-    const daten = await fetch(`http://localhost:3000/api/v1/get/?key=${key}`);
-    const json = await daten.json();
-    for (const d of json) {
-        const tr = document.createElement("TR");
-        const tdId = document.createElement("TD");
-        tdId.textContent = d.id;
-        const tdName = document.createElement("TD");
-        tdName.textContent = d.name;
-        const tdDaten = document.createElement("TD");
-        tdDaten.textContent = d.data;
-        tr.append(tdId);
-        tr.append(tdName);
-        tr.append(tdDaten);
-        datenTBody.append(tr);
+        const daten = await fetch(`http://localhost:3000/api/v1/get/?key=${key}`);
+        const json = await daten.json();
+        for (const d of json) {
+            const tr = document.createElement("TR");
+            const tdId = document.createElement("TD");
+            tdId.textContent = d.id;
+            const tdName = document.createElement("TD");
+            tdName.textContent = d.name;
+            const tdDaten = document.createElement("TD");
+            tdDaten.textContent = d.data;
+            tr.append(tdId);
+            tr.append(tdName);
+            tr.append(tdDaten);
+            datenTBody.append(tr);
+        }
+    } catch (error) {
+        console.log(error)
+        showLogin()
     }
 }
 </script>
